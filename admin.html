@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap & Earn | Admin Master Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .sidebar-item:hover { background-color: #1e293b; }
+        .active-tab { background-color: #334155; border-left: 4px solid #3b82f6; }
+        .admin-section { display: none; animation: fadeIn 0.3s ease; }
+        .admin-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
+        <div class="p-6">
+            <h1 class="text-xl font-bold text-blue-500 italic underline decoration-yellow-500">MASTER ADMIN</h1>
+        </div>
+        <nav class="flex-grow">
+            <button onclick="switchTab('dashboard')" class="sidebar-item w-full text-left p-4 flex items-center gap-3 transition active-tab" id="btn-dashboard">📊 Dashboard</button>
+            <button onclick="switchTab('tasks')" class="sidebar-item w-full text-left p-4 flex items-center gap-3 transition" id="btn-tasks">📋 Task Manager</button>
+            <button onclick="switchTab('withdrawals')" class="sidebar-item w-full text-left p-4 flex items-center gap-3 transition" id="btn-withdrawals">💸 Payments</button>
+            <button onclick="switchTab('settings')" class="sidebar-item w-full text-left p-4 flex items-center gap-3 transition" id="btn-settings">⚙️ Settings</button>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            v2.0 Build 2026
+        </div>
+    </aside>
+
+    <main class="flex-grow overflow-y-auto p-8">
+        
+        <section id="dashboard" class="admin-section active">
+            <h2 class="text-3xl font-bold mb-6">Live Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                    <p class="text-slate-400 text-sm mb-1">Total Users</p>
+                    <p class="text-4xl font-bold" id="stat-users">0</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                    <p class="text-slate-400 text-sm mb-1">Total Coins in Circulation</p>
+                    <p class="text-4xl font-bold text-yellow-500" id="stat-coins">0</p>
+                </div>
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+                    <p class="text-slate-400 text-sm mb-1">Pending Withdrawals</p>
+                    <p class="text-4xl font-bold text-red-500" id="stat-pending">0</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tasks" class="admin-section">
+            <h2 class="text-3xl font-bold mb-6">Task Management</h2>
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 mb-8">
+                <h3 class="text-lg font-semibold mb-4 text-blue-400">Add New Task</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="t-name" placeholder="Task Name (e.g. Join TG)" class="bg-slate-800 p-3 rounded-lg outline-none focus:ring-2 ring-blue-500">
+                    <input type="number" id="t-reward" placeholder="Reward Coins" class="bg-slate-800 p-3 rounded-lg outline-none">
+                    <input type="text" id="t-link" placeholder="URL Link" class="bg-slate-800 p-3 rounded-lg outline-none">
+                    <select id="t-type" class="bg-slate-800 p-3 rounded-lg outline-none">
+                        <option value="telegram">Telegram Join</option>
+                        <option value="youtube">Watch Video</option>
+                        <option value="ad">Monotag Ad</option>
+                    </select>
+                </div>
+                <button onclick="createTask()" class="mt-4 bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-xl font-bold transition">Publish Task</button>
+            </div>
+            
+            <div id="active-tasks-list" class="space-y-4">
+                </div>
+        </section>
+
+        <section id="withdrawals" class="admin-section">
+            <h2 class="text-3xl font-bold mb-6">Payment Requests</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
+                    <thead class="bg-slate-800 text-slate-300 text-sm uppercase">
+                        <tr>
+                            <th class="p-4">User</th>
+                            <th class="p-4">Amount (Coins)</th>
+                            <th class="p-4">Wallet Address</th>
+                            <th class="p-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdraw-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="settings" class="admin-section">
+            <h2 class="text-3xl font-bold mb-6">System Settings</h2>
+            <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 max-w-md">
+                <label class="block text-slate-400 mb-2">Coin Conversion Rate</label>
+                <div class="flex items-center gap-4 mb-6">
+                    <input type="number" id="set-rate" value="10000" class="bg-slate-800 p-3 rounded-lg flex-grow outline-none border border-slate-700">
+                    <span class="text-xl">= 1 USDT</span>
+                </div>
+                
+                <label class="block text-slate-400 mb-2">Bot Status</label>
+                <select id="set-status" class="w-full bg-slate-800 p-3 rounded-lg mb-8 outline-none border border-slate-700">
+                    <option value="online">Online & Paying</option>
+                    <option value="maintenance">Maintenance Mode</option>
+                </select>
+
+                <button onclick="saveSettings()" class="w-full bg-green-600 hover:bg-green-700 py-3 rounded-xl font-bold">Save All Settings</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, addDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // REPLACE WITH YOUR FIREBASE CONFIG
+        const firebaseConfig = {
+  apiKey: "AIzaSyCGdkUpsCg2p13imTYQtYpGmn7QCEKgUsA",
+  authDomain: "telegram-bot-b2b8b.firebaseapp.com",
+  projectId: "telegram-bot-b2b8b",
+  storageBucket: "telegram-bot-b2b8b.firebasestorage.app",
+  messagingSenderId: "303764184325",
+  appId: "1:303764184325:web:2b571cb0e378642bc92b6c"
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- TAB SWITCHER ---
+        window.switchTab = (tabId) => {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active-tab'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active-tab');
+        };
+
+        // --- DASHBOARD STATS ---
+        function initDashboard() {
+            // Watch Users & Coins
+            onSnapshot(collection(db, "users"), (snap) => {
+                document.getElementById('stat-users').innerText = snap.size;
+                let total = 0;
+                snap.forEach(u => total += (u.data().coins || 0));
+                document.getElementById('stat-coins').innerText = total.toLocaleString();
+            });
+
+            // Watch Pending Withdrawals
+            const q = query(collection(db, "withdrawals"), where("status", "==", "Pending"));
+            onSnapshot(q, (snap) => {
+                document.getElementById('stat-pending').innerText = snap.size;
+                renderWithdrawals(snap);
+            });
+        }
+
+        // --- TASK MANAGER ---
+        window.createTask = async () => {
+            const name = document.getElementById('t-name').value;
+            const reward = Number(document.getElementById('t-reward').value);
+            const link = document.getElementById('t-link').value;
+            const type = document.getElementById('t-type').value;
+
+            if(!name || !reward) return alert("Fill required fields");
+
+            await addDoc(collection(db, "tasks"), { name, reward, link, type, createdAt: new Date() });
+            alert("✅ Task Published!");
+            document.getElementById('t-name').value = "";
+            document.getElementById('t-reward').value = "";
+        };
+
+        function loadTasks() {
+            onSnapshot(collection(db, "tasks"), (snap) => {
+                const cont = document.getElementById('active-tasks-list');
+                cont.innerHTML = `<h3 class="text-lg font-semibold text-slate-500">Live Tasks (${snap.size})</h3>`;
+                snap.forEach(d => {
+                    const t = d.data();
+                    cont.innerHTML += `
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <p class="font-bold">${t.name} <span class="text-xs bg-slate-800 px-2 py-1 rounded text-blue-400 ml-2">${t.type}</span></p>
+                                <p class="text-sm text-green-500">${t.reward} Coins</p>
+                            </div>
+                            <button onclick="deleteTask('${d.id}')" class="text-red-500 hover:bg-red-500/10 p-2 rounded">🗑️ Delete</button>
+                        </div>`;
+                });
+            });
+        }
+
+        window.deleteTask = async (id) => {
+            if(confirm("Are you sure?")) await deleteDoc(doc(db, "tasks", id));
+        };
+
+        // --- PAYMENTS ---
+        function renderWithdrawals(snapshot) {
+            const body = document.getElementById('withdraw-table-body');
+            body.innerHTML = "";
+            snapshot.forEach(d => {
+                const w = d.data();
+                body.innerHTML += `
+                    <tr class="border-t border-slate-800 hover:bg-slate-800/50 transition">
+                        <td class="p-4 font-semibold">${w.name || 'Anonymous'}</td>
+                        <td class="p-4 text-yellow-500">${w.amount}</td>
+                        <td class="p-4 font-mono text-xs text-slate-400">${w.address}</td>
+                        <td class="p-4 flex gap-2">
+                            <button onclick="updateStatus('${d.id}', 'Approved')" class="bg-green-600 px-3 py-1 rounded text-xs font-bold">APPROVE</button>
+                            <button onclick="updateStatus('${d.id}', 'Rejected')" class="bg-red-600 px-3 py-1 rounded text-xs font-bold">REJECT</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        window.updateStatus = async (id, status) => {
+            await updateDoc(doc(db, "withdrawals", id), { status });
+            alert(`Payment ${status}`);
+        };
+
+        // --- SETTINGS ---
+        window.saveSettings = async () => {
+            const rate = document.getElementById('set-rate').value;
+            const status = document.getElementById('set-status').value;
+            await setDoc(doc(db, "app_settings", "global"), {
+                conversionRate: Number(rate),
+                botStatus: status
+            });
+            alert("Settings Saved & Synced with User App!");
+        };
+
+        // Initialize
+        initDashboard();
+        loadTasks();
+
+    </script>
+</body>
+</html>
